@@ -1,10 +1,47 @@
 import React, { useState } from "react";
 import "./styles/login.sass";
-import { Link } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!email || !password) {
+      alert("Por favor, ingrese su correo y contraseña.");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:4000/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.message || "Error al iniciar sesión.");
+        return;
+      }
+
+      // Guarda el token si existe
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+
+      alert("Inicio de sesión exitoso.");
+      navigate("/home"); // redirige al home o dashboard
+    } catch (error) {
+      console.error(error);
+      alert("Error al conectar con el servidor.");
+    }
+  };
 
   return (
     <div className="login-page">
@@ -12,28 +49,47 @@ const Login = () => {
         <h1 className="title">
           Movie<span>Wave</span>
         </h1>
+
         <p className="subtitle">¡Bienvenido a la mejor plataforma de streaming!</p>
         <p className="text">Ingrese su correo y contraseña para acceder</p>
 
-        <input type="email" placeholder="Email" className="input" />
-
-        <div className="password-container">
+        <form onSubmit={handleLogin}>
           <input
-            type={showPassword ? "text" : "password"}
-            placeholder="Contraseña"
+            type="email"
+            placeholder="Correo electrónico"
             className="input"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
-          <img
-            src={showPassword ? "../public/images/eyeopen.svg" : "../public/images/eyeclose.svg"}
-            alt="Mostrar contraseña"
-            className="eye-icon"
-            onClick={() => setShowPassword(!showPassword)}
-          />
-        </div>
 
-        <button className="login-btn">Iniciar sesión</button>
+          <div className="password-container">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Contraseña"
+              className="input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <img
+              src={
+                showPassword
+                  ? "/images/eyeopen.svg"
+                  : "/images/eyeclose.svg"
+              }
+              alt="Mostrar contraseña"
+              className="eye-icon"
+              onClick={() => setShowPassword(!showPassword)}
+            />
+          </div>
 
-        <a href="#" className="forgot">¿Olvidó su contraseña?</a>
+          <button type="submit" className="login-btn">
+            Iniciar sesión
+          </button>
+        </form>
+
+        <a href="#" className="forgot">
+          ¿Olvidó su contraseña?
+        </a>
 
         <button className="google-btn">
           <img src="/images/google.svg" alt="Google" />
@@ -42,8 +98,7 @@ const Login = () => {
 
         <p className="register">
           ¿No tiene cuenta? <Link to="/register">Regístrese</Link>
-        </p>    
-
+        </p>
       </div>
     </div>
   );
