@@ -87,8 +87,8 @@ const Login = () => {
           </button>
         </form>
 
-        <a href="#" className="forgot">
-          ¿Olvidó su contraseña?
+        <a className="forgot">
+          ¿Olvidó su contraseña? <Link to="/forgot">Recupérela</Link>
         </a>
 
         <button className="google-btn">
